@@ -5,28 +5,37 @@ use std::cmp::Ordering;
 
 pub fn day2() -> std::io::Result<()> {
     let mut file = File::open("day2.txt")?;
-    let buff = BufReader::new(file);
-    let mut count = 0;
+    let mut buff = String::new();
+    file.read_to_string(&mut buff)?;
 
-    for line in buff.lines() {
-        
-        let line = line?;
-        let v: Vec<u32> = line
-            .split_whitespace()
-            .filter_map(|num| num.parse::<u32>().ok())
-            .collect();
-        //println!("return={}",validate(&v));
-        count += validate(&v);
-    }
-    println!("count={}", count);
+    println!("count={}", part2(&buff[..]));
     Ok(())
 }
 
 
-pub fn validate(v: &Vec<u32>) -> u32 {
+fn is_ok(nums: &[i32]) -> bool {
+    let sign = nums[0] < nums[1];
+    nums[..]
+        .windows(2)
+        .all(|w| (w[0] - w[1]).abs() > 0 && (w[0] - w[1]).abs() < 4 && (w[0] < w[1]) == sign)
+}
+
+fn part2(s: &str) -> usize {
+    s.lines()
+        .filter(|l| {
+            let nums = l
+                .split_whitespace()
+                .map(|w| w.parse::<i32>().unwrap())
+                .collect::<Vec<_>>();
+            is_ok(&nums[..])
+                || (0..nums.len()).any(|i| is_ok(&[&nums[..i], &nums[i + 1..]].concat()))
+        })
+        .count()
+}
+
+pub fn part1(v: &Vec<u32>) -> u32 {
     let mut inc = false;
     let mut order = v[0] < v[1];
-    //println!("validating:{:?}", &v);
 
     for (i, num) in v.iter().enumerate(){
         if i > 0 {
